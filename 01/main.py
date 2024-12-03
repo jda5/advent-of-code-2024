@@ -1,7 +1,7 @@
 from collections import Counter
-from utils import load_input
+from utils import load_input_lines
 
-location_ids = load_input('01')
+location_ids = load_input_lines('01')
 
 def puzzle_one() -> int:
     left, right = [], []

@@ -1,6 +1,6 @@
-from utils import load_input
+from utils import load_input_lines
 
-reports = load_input('02')
+reports = load_input_lines('02')
 
 
 def is_safe(a: int, b: int, is_increasing: bool) -> bool:
