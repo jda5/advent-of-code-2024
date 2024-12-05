@@ -98,7 +98,6 @@ def puzzle_two() -> int:
                     pages[i] = sorted_pages[j]
                     j += 1
 
-            # print(pages)
             middle_sum += pages[len(pages) // 2]
 
     return middle_sum
