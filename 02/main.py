@@ -38,19 +38,13 @@ def puzzle_two() -> int:
 
     for report in reports:
         report = list(map(int, report.split()))
-        prev_i, prev = 0, report[0]
-        is_increasing = prev < report[1]
-        for curr_i, curr in enumerate(report[1:], 1):
-            if not is_safe(prev, curr, is_increasing):
-
-                report_with_curr_removed = report[:curr_i] + report[curr_i + 1:]
-                report_with_prev_removed = report[:prev_i] + report[prev_i + 1:]
-                
-                if not (is_safe_report(report_with_curr_removed) or is_safe_report(report_with_prev_removed)):
-                    num_unsafe += 1
-                break
-
-            prev, prev_i = curr, curr_i
+        if not is_safe_report(report):
+            for i in range(len(report)):
+                # Eurgh this is bad.
+                if is_safe_report(report[:i] + report[i+1:]):
+                    break
+            else:
+                num_unsafe += 1
 
     return len(reports) - num_unsafe
 
