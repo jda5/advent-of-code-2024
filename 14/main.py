@@ -1,6 +1,6 @@
 from utils import load_input_lines
 from math import prod
-import scipy.stats as stats
+from scipy.stats import zscore
 import numpy as np
 
 _input = load_input_lines('14')
@@ -89,15 +89,13 @@ def puzzle_two() -> int:
     safety_factors = []
     for i in range(10_000):
         # A map with a christmas tree might have a very low safety factor.
+        _map.move_robots()
         safety_factor = _map.calculate_safety_factor()
         safety_factors.append(safety_factor)
 
     # Find outlying safety scores by calculating their Z-scores.
-    data = np.array(safety_factors)
-    z_scores = stats.zscore(data)
-    for i, elem in enumerate(z_scores, start=1):
-        if abs(elem) > 9:
-            return i
+    z_scores = zscore(safety_factors)
+    return np.argmin(z_scores) + 1
 
 if __name__ == "__main__":
     print(puzzle_one())
