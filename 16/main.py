@@ -1,10 +1,9 @@
+from utils import load_input_lines
 from typing import Iterator
 from queue import PriorityQueue
 
 
-with open('input.txt') as file:
-    _input = file.read().splitlines()
-
+_input = load_input_lines('16')
 
 class Maze:
 
@@ -17,32 +16,48 @@ class Maze:
             for col in range(len(self.map[0])):
                 yield self.map[row][col], row, col
 
-    def get_adjacent(self, pos: tuple[int, int]) -> Iterator[tuple[str, tuple[int, int], tuple[int, int]]]:
+    def get_adjacent(self, pos: tuple[int, int], prev: tuple[int, int]) -> list[tuple[tuple[int, int], tuple[int, int]]]:
         directions = (
             (0, 1), (0, -1), (1, 0), (-1, 0)
         )
+        adjacent = []
         for dy, dx in directions:
             nrow = dy + pos[0]
             ncol = dx + pos[1]
-            yield self.map[nrow][ncol], (nrow, ncol), (dy, dx)
+            if self.map[nrow][ncol] != '#' and (nrow, ncol) != prev:
+                adjacent.append(((nrow, ncol), (dy, dx)))
+        return adjacent
 
     def get_square_pos(self, square: str) -> tuple[int, int]:
         for value, row, col in self.get_tiles():
             if value == square:
                 return row, col
             
+    def print_maze(self, steps: list[tuple[int, int]]):
+        # Create a mutable copy of the maze
+        res = [list(row) for row in self.map]
+        
+        # Mark the path taken with '@'
+        for srow, scol in steps:
+            if res[srow][scol] not in ('S', 'E'):  # Preserve start and end markers
+                res[srow][scol] = '@'
+        
+        # Join rows and print the maze
+        for row in res:
+            print(''.join(row))
+            
 class Head:
 
-    def __init__(self, pos: tuple[int, int], direction: tuple[int, int], score: int):
+    def __init__(self, pos: tuple[int, int], direction: tuple[int, int], score: int, prev: tuple[int, int]):
         self.pos = pos
         self.direction = direction
         self.score = score
+        self.prev = prev
 
     def __lt__(self, other: 'Head') -> bool:
         return self.score < other.score
 
 
-# 82464 -- Too high
 def puzzle_one() -> int:
     maze = Maze(_input)
     reindeer_pos = maze.get_square_pos('S')
@@ -50,7 +65,7 @@ def puzzle_one() -> int:
     # Prioritise paths with the lowest score.
     path_queue = PriorityQueue()
     path_queue.put(
-        Head(pos=reindeer_pos, direction=(0, 1), score=0)
+        Head(pos=reindeer_pos, direction=(0, 1), score=0, prev=reindeer_pos)
     )
 
     # Use a BFS approach to navigate the maze - prioritising
@@ -59,11 +74,19 @@ def puzzle_one() -> int:
 
     while not path_queue.empty():
         head: Head = path_queue.get()
-
-        for value, new_pos, new_direction in maze.get_adjacent(head.pos):
-            if value == '#':
-                # Wall. Can't explore this path further.
+        adjacent_squares = maze.get_adjacent(head.pos, head.prev)
+        
+        if head.pos in visited_scores:
+            if visited_scores[head.pos] <= head.score and len(adjacent_squares) <= 1:
+                # This tile has already been visited and has a lower score.
+                # Don't continue to explore this route.
                 continue
+        visited_scores[head.pos] = head.score
+
+        if head.pos == maze.end_pos:
+            continue
+
+        for new_pos, new_direction in adjacent_squares:
             
             # Calculate the score the path would have, if went to this next square
             if new_direction != head.direction:
@@ -71,17 +94,9 @@ def puzzle_one() -> int:
             else:
                 new_score = head.score + 1
 
-            if new_pos in visited_scores:
-                if visited_scores[new_pos] <= new_score:
-                    # The tile has already been visited has a score.
-                    # Don't continue to explore this route.
-                    continue
-            
-            visited_scores[new_pos] = new_score
-
-            # Don't add this position to the search space if we've reached the end.
-            if new_pos != maze.end_pos:
-                path_queue.put(Head(pos=new_pos, direction=new_direction, score=new_score))
+            path_queue.put(
+                Head(pos=new_pos, direction=new_direction, score=new_score, prev=head.pos)
+            )
     
     return visited_scores[maze.end_pos]
 
@@ -93,3 +108,5 @@ if __name__ == "__main__":
     print(puzzle_one())
     print(puzzle_two())
 
+# 82460
+# 590
