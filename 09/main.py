@@ -3,6 +3,7 @@ from typing import Iterator
 
 disk_map = list(map(int, load_input_full('09')))
 
+enumerate
 # The disk map uses a dense format to represent the layout of files and free space on the disk. 
 # The digits alternate between indicating the length of a file and the length of free space.
 
@@ -10,7 +11,12 @@ def get_file_index(i: int) -> int:
     return i // 2
 
 def checksum(arr: list[int]) -> int:
-    return sum(i * elem for i, elem in enumerate(arr))
+    val = 0
+    for i, elem in enumerate(arr):
+        if elem is not None:
+            val += (elem * i)
+    return val
+    
 
 def puzzle_one() -> int:
     # Strategy: use two pointers, one for the left and right of the disk map.
@@ -52,8 +58,10 @@ def puzzle_one() -> int:
 def print_disk(disk):
     temp = [str(item) if item is not None else '.' for item in disk ]
     print(''.join(temp))
-    ''.join(temp) == '00992111777.44.333....5555.6666.....8888..'
+    # print(''.join(temp) == '00992111777.44.333....5555.6666.....8888..')
 
+# 6415666502672 -- too high
+# 6415597058749 -- wrong
 def puzzle_two() -> int:
 
     disk = []
@@ -68,18 +76,21 @@ def puzzle_two() -> int:
 
     curr_file = None
     file_count = 0
+
     for i in range(len(disk) - 1, -1, -1):
         file = disk[i]
+        
         if curr_file != file:
-
             if curr_file is not None:
-
+            
                 space_count = 0
                 space_index = None
 
                 for j in range(len(disk)):
-                    if j >= i:
+                    if j >= i + file_count:
+                        space_index = None
                         break
+
                     space = disk[j]
                     if space is None:
                         space_count += 1
@@ -115,10 +126,9 @@ def puzzle_two() -> int:
         else:
             file_count += 1
 
-    print_disk(disk)
-    return checksum([item for item in disk if item is not None])
+    return checksum(disk)
                 
 
 if __name__ == "__main__":
-    # print(puzzle_one())
+    print(puzzle_one())
     print(puzzle_two())
