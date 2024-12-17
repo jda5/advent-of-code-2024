@@ -1,7 +1,7 @@
 from utils import load_input_lines
 from typing import Iterator
 from queue import PriorityQueue
-
+from collections import defaultdict
 
 _input = load_input_lines('16')
 
@@ -48,20 +48,27 @@ class Maze:
             
 class Head:
 
-    def __init__(self, pos: tuple[int, int], direction: tuple[int, int], score: int, prev: tuple[int, int]):
+    def __init__(self, 
+        pos: tuple[int, int], 
+        direction: tuple[int, int], 
+        score: int, 
+        prev: tuple[int, int], 
+        path: list[tuple[int, int]] = []
+    ):
         self.pos = pos
         self.direction = direction
         self.score = score
         self.prev = prev
+        self.path = path
 
     def __lt__(self, other: 'Head') -> bool:
         return self.score < other.score
 
 
-def puzzle_one() -> int:
-    maze = Maze(_input)
-    reindeer_pos = maze.get_square_pos('S')
+maze = Maze(_input)
+reindeer_pos = maze.get_square_pos('S')
 
+def puzzle_one() -> int:
     # Prioritise paths with the lowest score.
     path_queue = PriorityQueue()
     path_queue.put(
@@ -100,13 +107,70 @@ def puzzle_one() -> int:
     
     return visited_scores[maze.end_pos]
 
+# WARNING: This is horribly inefficient (takes about 38 seconds)
+# but it works and it's 1:33 AM and I don't want to work on this anymore.
 def puzzle_two() -> int:
-    ...
+    # Prioritise paths with the lowest score.
+    path_queue = PriorityQueue()
+    path_queue.put(
+        Head(
+            pos=reindeer_pos, 
+            direction=(0, 1), 
+            score=0, 
+            prev=reindeer_pos,
+            path=[]
+        )
+    )
+
+    # Use a BFS approach to navigate the maze - prioritising
+    # the path with the lowest score.
+    visited_scores = {}
+    best_paths = defaultdict(list)
+
+    while not path_queue.empty():
+        head: Head = path_queue.get()
+        adjacent_squares = maze.get_adjacent(head.pos, head.prev)
+        
+        if head.pos in visited_scores:
+            if visited_scores[head.pos] < head.score and len(adjacent_squares) <= 1:
+                # This tile has already been visited and has a lower score.
+                # Don't continue to explore this route.
+                continue
+
+        visited_scores[head.pos] = head.score
+
+        if head.pos == maze.end_pos:
+            best_paths[head.score].append(head)
+            continue
+
+        for new_pos, new_direction in adjacent_squares:
+            
+            # Calculate the score the path would have, if went to this next square
+            if new_direction != head.direction:
+                new_score = head.score + 1001
+            else:
+                new_score = head.score + 1
+
+            new_path = head.path.copy()
+            new_path.append(head.pos)
+            path_queue.put(
+                Head(
+                    pos=new_pos, 
+                    direction=new_direction, 
+                    score=new_score, 
+                    prev=head.pos, 
+                    path=new_path
+                )
+            )
+    
+    path_tiles = set()
+    for head in best_paths[min(best_paths)]:
+        path_tiles.update(head.path)
+
+    # Need to also include the start tile
+    return len(path_tiles) + 1
 
 
 if __name__ == "__main__":
     print(puzzle_one())
     print(puzzle_two())
-
-# 82460
-# 590
