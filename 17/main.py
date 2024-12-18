@@ -176,6 +176,13 @@ def puzzle_one() -> str:
         instructions[state.pointer].run(state)
     return state.__str__()
 
+def oct_to_dec(oct: str) -> int:
+    return int(oct, 8)
+
+def dec_to_oct(dec: int) -> str:
+    # format() with 'o' formats the integer as an octal string without the '0o' prefix.
+    return format(dec, 'o')
+
 def puzzle_two() -> int:
     state, instructions = load()
 
@@ -184,14 +191,25 @@ def puzzle_two() -> int:
         output.append(instruction.opcode)
         output.append(instruction.operand)
 
-    for a in range(1, 100):
-        state.reset(a)
-    
-        while state.pointer < len(instructions):
-            instructions[state.pointer].run(state)
+    # Iterate backwards over our output.
+    lower_bound = 0
+    for i in range(len(output) - 1, -1, -1):
 
-        print(a, state)
+        # There is probably a more appropriate upper bound, but I can't figure it out.
+        for a in range(lower_bound, lower_bound + (8 ** (len(output) - i))):
+            state.reset(a)
+            while state.pointer < len(instructions):
+                instructions[state.pointer].run(state)
 
+            if state.output == output[i:]:
+                if len(state.output) == len(output):
+                    return a
+                
+                # Convert the a value to base 8 and shift the values to the left
+                # to form the new lower bound.
+                a_base_8 = dec_to_oct(a)
+                lower_bound = oct_to_dec(a_base_8 + '0')
+                break
 
 if __name__ == "__main__":
     print(puzzle_one())
