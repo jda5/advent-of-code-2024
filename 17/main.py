@@ -191,7 +191,8 @@ def puzzle_two() -> int:
         output.append(instruction.opcode)
         output.append(instruction.operand)
 
-    # Iterate backwards over our output.
+    # Iterate backwards over the expected output, trying to find a value of A
+    # that reproduces the substring output[i:]
     lower_bound = 0
     for i in range(len(output) - 1, -1, -1):
 
@@ -202,11 +203,12 @@ def puzzle_two() -> int:
                 instructions[state.pointer].run(state)
 
             if state.output == output[i:]:
+                # If we matched the entire output, we've found our solution.
                 if len(state.output) == len(output):
                     return a
                 
-                # Convert the a value to base 8 and shift the values to the left
-                # to form the new lower bound.
+                # If not complete, but we matched a partial suffix, we need to adjust the lower_bound.
+                # Convert 'a' to base 8 and append '0' in octal, effectively "shifting" our search range.
                 a_base_8 = dec_to_oct(a)
                 lower_bound = oct_to_dec(a_base_8 + '0')
                 break
