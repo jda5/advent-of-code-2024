@@ -6,12 +6,7 @@ _input = load_input_lines('20')
 
 class Maze:
 
-    VALID_DIRECTIONS = [
-        (0, 1),
-        (0, -1),
-        (1, 0),
-        (-1, 0),
-    ]
+    VALID_DIRECTIONS = [(0, 1), (0, -1), (1, 0), (-1, 0)]
 
     def __init__(self, grid: list[str]):
         self.grid = grid
@@ -60,10 +55,9 @@ def find_cheat_positions(maze: Maze, start_pos: tuple[int, int], cheat_length: i
     possible_positions = []
     
     # Collect potential horizontal moves within 'cheat_length'
-    # Format: [(pos, remaining_cheat_moves), ...]
     horizonatal_pos = [ (start_pos, cheat_length) ]
 
-    # Move i steps left or i steps right, then leftover steps remain.
+    # Move steps left or right, then leftover steps remain.
     for steps in range(1, cheat_length + 1):
         move_right = start_pos[1] + steps
         move_left = start_pos[1] - steps
