@@ -48,6 +48,8 @@ class DirectionalKeypad:
 
     def get_movements(self, button: str):
         return self.MOVEMENT_TABLE[self.pos][button]
+    
+
 
 def puzzle_one() -> int:
     ...
